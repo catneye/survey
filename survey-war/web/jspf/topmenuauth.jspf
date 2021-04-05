@@ -1,0 +1,20 @@
+
+<%@ page pageEncoding="UTF-8" %>
+
+<div class="topmenuitem" style="float: right">
+    <a href="#" onclick="logout();return false;">Выход</a>
+</div>
+
+<script>
+    function logout() {
+        var item = 0;
+        obj = {type: "logout",
+            object: item};
+        socketsend(Object.toJSON(obj));
+    }
+    
+    function onLogout(result) {
+        gotoIndex();
+    }
+    addOnMessage("logout", onLogout);
+</script>

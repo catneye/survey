@@ -1,0 +1,5 @@
+
+<%@ page pageEncoding="UTF-8" %>
+    <div id="loader" class='centerloader' style="display: none;">
+        <img src="images/loader.gif" style="margin: 0 auto; "/>
+    </div>

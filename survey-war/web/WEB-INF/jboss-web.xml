@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-web>
+ <default-encoding>UTF-8</default-encoding>
+
+  <!--
+<context-root>/survey-war</context-root>
+
+-->
+<virtual-host>survey.ftsmk.ru</virtual-host>
+<context-root>/</context-root> 
+</jboss-web>
+

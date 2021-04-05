@@ -1,0 +1,68 @@
+<%@ page pageEncoding="UTF-8" %>
+
+<script language="javascript" type="text/javascript">
+    var wsName = "WSsurvey";
+
+    function getWsUri() {
+        var uri;
+    <%if (depricated != null) {
+    %>
+        uri = '<%=uri%>';
+    <% } else {%>
+        uri = '<%=wsuri%>';
+    <%}
+    %>
+        return uri;
+    }
+
+    function onOpen(evt) {
+        console.log('WebSocket onOpen');
+        //if (typeof onOpenSocket === 'function') {
+        //onOpenSocket();
+        //}
+    }
+    function onMessage(evt) {
+        console.log('WebSocket onMessage');
+        var json;
+    <%if (depricated != null) {
+    %>
+        json = JSON.parse(evt.responseText);
+    <% } else {%>
+        json = JSON.parse(evt.data);
+    <%}
+    %>
+        console.log('json response: ' + json.response);
+        console.log('json result: ' + json.result);
+
+        for (var i = 0; i < onmessagefuncs.length; i++) {
+            var callback = onmessagefuncs[i];
+            if (callback.response === json.response) {
+                callback.funcptr(json.result);
+            }
+        }
+
+    }
+    function onError(evt) {
+        console.log('WebSocket onError');
+        if (!evt.wasClean) {
+        }
+    }
+    function onClose(evt) {
+        console.log('WebSocket onClose');
+        if (!evt.wasClean) {
+        }
+    }
+    <%if (depricated != null) {
+    %>
+    setInterval(function () {
+        var item = "test";
+        var tobj = {type: "test",
+            object: item};
+        socketsend(Object.toJSON(tobj));
+    }, 300000);
+    <% }
+    %>
+    //socketsend(Object.toJSON({type: "test", object: "тестовая строка"}));
+
+    //socketinit(onOpen, onMessage, onError, onClose);
+</script>

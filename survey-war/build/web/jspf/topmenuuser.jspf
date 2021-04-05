@@ -1,0 +1,17 @@
+
+<%
+    String depricated = (String) request.getParameter("depricated");
+%>
+<%@ page pageEncoding="UTF-8" %>
+
+<div class="topmenuitem" style="float: right">
+    <a href="#" onmouseover="showMenu('floatmenuuser'); return false;">Пользователь</a>
+    <div class="floatmenu" id="floatmenuuser" style="display: none;" 
+         onmouseleave="showMenu();return false;">
+        <div class="floatmenuitem" style="float: top;">
+            <a href="./index.jsp?action=authsurveys<%=((depricated != null)?"&depricated=yes":"") %>">Доступные опросы</a>
+        </div>
+        <div class="floatmenuitem" style="clear: both;">
+        </div>
+    </div>
+</div>

@@ -1,0 +1,289 @@
+/* 
+    Created on : Oct 5, 2016, 1:15:18 PM
+    Author     : plintus
+*/
+
+/* general*/
+html {
+    min-height: 100%;
+    width: 100%;
+    font-family: 'PT Sans', sans-serif;
+    font-size:14px;
+    background-color: white;
+}
+
+body{
+}
+
+a:link{
+    color: darkred;
+}
+a:visited{
+    color: darkred;
+}
+a:active{
+    color: darkred;
+}
+a:hover{
+    color: darkred;
+}
+
+.main{
+    width: 100%;
+    min-height: 100%;
+    color:  black;
+    font-size: 14px;
+    font-weight: normal;
+    border-spacing: 0px;
+    vertical-align: top;
+    margin: 0px;
+    padding: 0px;
+    position: absolute;
+    top:0px;
+    left:0px;
+}
+.header{
+    width: 100%;
+    min-height: 50px;
+    background:transparent;
+}
+
+.topmenu{
+    text-align: center; 
+    background:transparent;
+    min-width: 30px;
+    background-color: lightgray;
+    width: 100%
+}
+.topmenuitem{
+    padding: 5px;
+    vertical-align: middle;
+    text-transform: uppercase; 
+    font-size: 14px; 
+    font-weight: bold; 
+    margin-left: 5px;
+    margin-right: 5px;
+}
+.floatmenu{
+    padding: 5px; 
+    margin-top: 5px;
+    border: solid 1px lightgray; 
+    position: absolute; 
+    background: white;
+    box-shadow: 1px 1px 5px black;
+}
+.floatmenuitem{
+    padding: 5px;
+}
+.workspace{
+    max-width: 1024px;
+    min-width: 1024px;
+    min-height: 100%;
+    margin: 0 auto;
+    background:transparent;
+}
+.footer{
+    background-color: rgba(255, 255, 255, 0.4);
+    display: table; 
+    width: 100%;
+    max-width: 1200px;
+    min-width: 1024px;
+    border-radius: 5px 5px 0px 0px;
+    padding: 5px;
+    bottom: 0px;
+    margin: 0 auto;
+}
+.footeritem{
+    display: table-cell;
+    padding: 5px;
+    vertical-align: middle;
+    text-transform: uppercase; 
+    font-size: 14px; 
+    font-weight: bold; 
+    color: black;
+    background:transparent;
+}
+
+/* login*/
+.loginframe{
+    width: 20%;
+    position: absolute;
+    background: white;
+    border:1px solid lightgray;
+    margin: 10px;
+    z-index: 101;
+    right: 5%;
+    box-shadow: 1px 1px 5px black;
+}
+.loginframetext{
+    width:100%; 
+    color: black; 
+    font-size: 14px; 
+    margin: 5px;
+}
+.loginframeredtext{
+    width:100%; 
+    color: red; 
+    font-weight: normal; 
+    font-size: 14px; 
+    margin: 5px;
+}
+.loginframeinput{
+    font-size: 14px;
+    border:1px solid lightgray;
+    width:90%;
+    margin: 5px;
+}
+.loginframebutton{
+    font-size: 14px; 
+    border: 1px solid;
+    border-radius: 3px;
+    margin:5px;
+}
+
+.defaulttable{
+    border: solid 1px lightgray;
+    border-spacing: 0px;
+    cursor: default;
+}
+.defaulttableheader{
+    background: lightgray;
+    font-weight: bold;
+    cursor: default;
+}
+.stdstableheader{
+    color: darkred;
+}
+.addstableheader{
+    color: black;
+}
+.redtable{
+    background-color: #ffeed6;
+}
+.greentable{
+    background-color: #ddffd6;
+}
+
+.defaulthint{
+    width: 1024px;
+    margin: 0 auto;
+    background:wheat;
+    border: solid 1px lightgray;
+    border-spacing: 0px;
+    border-radius: 3px;
+    position: fixed;
+    bottom: 0px;
+    z-index: 101;
+}
+
+.itemeditform{
+    position: absolute;
+    width: 90%;
+    min-height: 30%;
+    top: 50px;
+    left: 5%;
+    background-color: white;
+    border: 1px lightgray solid;
+    box-shadow: 10px 10px 10px black;
+    border-radius: 0px 0px 20px 20px;
+    padding-left: 10px;
+    margin: 0 auto;
+}
+
+.itemeditformheader{
+    margin: 0 auto;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    border-bottom: 1px black dashed;
+    padding: 5px;
+}
+
+.editform{
+    padding: 2px;
+    border: solid 1px lightgray;
+    border-radius: 3px;
+
+}
+.editformline{
+    margin: 5px;
+    display: table;
+    width: 100%;
+}
+
+.editformtitle{
+    display: table-cell;
+    padding-left: 5px;
+    font-size: 14px;
+    width: 29%;
+    vertical-align: top;
+}
+
+.editformfield{
+    display: table-cell;
+    padding-left: 5px;
+    font-size: 14px;
+    border: solid 1px gray;
+    border-radius: 3px;
+    height: 15px;
+    width: 69%;
+}
+
+.questlistitem{
+    width: 100%;
+    overflow: hidden;
+}
+.questlistname{
+    width: 10em;
+}
+.questlisttext{
+    width: 30em;
+}
+.answlistname{
+    width: 10em;
+    margin-left: 20px;
+}
+.anslisttext{
+    width: 30em;
+}
+
+.desctable{
+    font-size: 16px;
+    font-weight: normal;
+}
+.questtable{
+    font-size: 16px;
+    font-weight: normal;
+}
+.answtable{
+    font-size: 14px;
+    font-weight: normal;
+}
+.centerhint{
+    position: fixed;
+    top: 200px;
+    width: 800px;
+    height: 200px;
+    border: 5px solid green;
+    background-color: white;
+    box-shadow: 1px 1px 10px black;text-align: center;
+    border-radius: 5px;
+    right: 0;
+    left: 0;
+    margin-right: auto;
+    margin-left: auto;
+}
+.centerloader{
+    position: fixed;
+    top: 200px;
+    width:1024px; 
+    height: 100px;
+    border: 5px solid green;
+    background-color: white;
+    box-shadow: 1px 1px 10px black;text-align: center;
+    border-radius: 5px;
+    right: 0;
+    left: 0;
+    margin-right: auto;
+    margin-left: auto;
+}

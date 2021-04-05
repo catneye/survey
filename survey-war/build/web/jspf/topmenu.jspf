@@ -1,0 +1,23 @@
+
+<%@ page pageEncoding="UTF-8" %>
+
+<jsp:include page="/TopMenu" />
+
+<div class="topmenuitem" style="float: right">
+    <a href="#" onmouseover="showMenu('floatmenuunauth'); return false;">Для всех</a>
+    <div class="floatmenu" id="floatmenuunauth" style="display: none;" 
+         onmouseleave="showMenu();return false;">
+        <div class="floatmenuitem" style="float: top;">
+            <a href='./index.jsp?action=unauthsurveys<%=((depricated != null)?"&depricated=yes":"") %>'>Доступные опросы</a>
+        </div>
+        <div class="floatmenuitem" style="clear: both;">
+        </div>
+    </div>
+</div>
+
+<div class="topmenuitem" style="float: right">
+    <a href="./index.jsp?action=about">О системе</a>
+</div>
+
+<div style="clear: both">
+</div>

@@ -1,0 +1,48 @@
+<%@ page pageEncoding="UTF-8" %>
+<div id="login-frame" class="loginframe" style="display:none;">
+    <form id="login-form" action="#" onsubmit="return false;">
+        <fieldset><legend>Вход в систему</legend>
+            <div>
+                <div class="loginframetext">
+                    <label for="login-name">Имя
+                    </label>
+                </div>
+                <div class="loginframetext">
+                    <input type="text" id="login-name" name="login-name" class="loginframeinput"/>
+                </div>
+            </div>
+            <div>
+                <div class="loginframetext">
+                    <label for="login-secret">Пароль
+                    </label>
+                </div>
+                <div class="loginframetext">
+                    <input type="password" id="login-secret" name="login-secret" class="loginframeinput"/>
+                </div>
+            </div>
+        </fieldset>
+        <div>
+            <input type="submit" value="Войти" class="loginframebutton"
+                   onclick="checklogin();"/>
+            <input type="button" value="Отмена" class="loginframebutton"
+                   onclick="$('login-frame').hide();
+                           return false;"/>
+        </div>
+        <div class="loginframeredtext" id="login-fail"></div>
+    </form>
+</div>
+
+<script>
+    function checklogin() {
+        var item = $('login-form').serialize(true);
+        obj = {type: "checklogin",
+            object: item};
+        socketsend(Object.toJSON(obj));
+    }
+    function logout() {
+        var item = 0;
+        obj = {type: "logout",
+            object: item};
+        socketsend(Object.toJSON(obj));
+    }
+</script>

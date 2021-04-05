@@ -1,0 +1,16 @@
+
+<%@ page pageEncoding="UTF-8" %>
+
+<div class="topmenuitem" style="float: right">
+    <a href="#" onclick="$('login-frame').toggle();return false;">Войти</a>
+    <%@include file="/jspfforms/login.jspf" %>
+</div>
+<div class="topmenuitem" style="float: right">
+    <a href="#" onclick="return false;">О системе</a>
+</div>
+<jsp:include page="/TopMenu" />
+<div style="clear: both">
+</div>
+
+<script>
+</script>

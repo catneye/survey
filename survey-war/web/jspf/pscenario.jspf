@@ -1,0 +1,591 @@
+<%@ page pageEncoding="UTF-8" %>
+
+<div style="width:100%; min-height:100%" id="userformscenario"></div>
+<div id="centerhint" class="centerhint" style="display: none">
+
+    <div id="centerhinttext" style="font-weight: bold; font-size: 14px; word-wrap: break-word;"></div>
+</div>
+
+<script>
+
+    function ScenarioForm() {
+        var champing = {};
+        var scenario = {};
+        var mode = '<%=mode%>';
+
+        this.getScenario = function (idchamping) {
+            var loader = $("loader");
+            loader.show();
+            var t;
+            <% if (userinfo!=null){%>
+                t = "usergetscenario";
+            <%} else {%>
+                t = "allgetscenario";
+            <%}%>
+            var item = idchamping;
+            var obj = {type: t,
+                object: item};
+            socketsend(Object.toJSON(obj));
+        };
+
+        function getScenario(idchamping) {
+            var loader = $("loader");
+            loader.show();
+            var t;
+            <% if (userinfo!=null){%>
+                t = "usergetscenario";
+            <%} else {%>
+                t = "allgetscenario";
+            <%}%>
+            var item = idchamping;
+            var obj = {type: t,
+                object: item};
+            socketsend(Object.toJSON(obj));
+        }
+
+        function onCheckElement(event) {
+            //this.blur();
+            //if (event.target) {
+            //    event.target.blur();
+            // }
+            /*
+             var id = event.target.id;
+             var checked = event.target.checked;
+             if (checked) {
+             var quest = findQuestByAnswer(id);
+             var selmax = quest.selectmax;
+             var selcnt = 0;
+             var editable = false;
+             for (var i = 0; i < quest.answers.length; i++) {
+             if (quest.answers[i].checked) {
+             selcnt++;
+             }
+             }
+             if (selcnt < selmax) {
+             if (event.target.editbox) {
+             event.target.editbox.focus();
+             }
+             //event.target.blur();
+             return true;
+             } else {
+             event.preventDefault();
+             event.stopPropagation();
+             event.target.checked = false;
+             //event.target.blur();
+             return false;
+             }
+             }*/
+        }
+        function onCheckElement1(element, obj, propertyName, event) {
+            //event.target.blur();
+            var id = element.id;
+            var checked = element.checked;
+            if (checked) {
+                var quest = findQuestByAnswer(id);
+                var selmax = quest.selectmax;
+                var selcnt = 0;
+                var editable = false;
+                for (var i = 0; i < quest.answers.length; i++) {
+                    if (quest.answers[i].checked) {
+                        selcnt++;
+                    }
+                }
+                if (selcnt < selmax) {
+                    if (element.editbox) {
+                        element.editbox.focus();
+                    }
+                    //event.target.blur();
+                    return true;
+                } else {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    element.checked = false;
+                    //event.target.blur();
+                    return false;
+                }
+            }
+        }
+
+        this.ongetScenario = function (result) {
+            var loader = $("loader");
+            loader.hide();
+            if (result && (result !== 'false')) {
+                var res = JSON.parse(result);
+                scenario = res;
+                champing = res.champing;
+                if (!scenario.selects) {
+                    scenario.selects = {};
+                }
+                var w = $('userformscenario');
+                while (w.firstChild) {
+                    w.removeChild(w.firstChild);
+                }
+                var delimiter = document.createElement("div");
+                delimiter.setStyle({'height': '20px'});
+
+
+                var divheader = document.createElement("div");
+                divheader.addClassName('desctable');
+                divheader.setStyle({'background-color': 'wheat', 'min-height': "5px", margin: "5px", 'width': '100%'});
+                divheader.innerHTML = champing.description;
+                w.appendChild(divheader);
+                w.appendChild(delimiter);
+
+                var quests = scenario.questions;
+                //change levels for randoms
+                for (var i = 0; i < quests.length; i++) {
+                    //questions israndomchild
+                    if (quests[i].israndomchild) {
+                        var childs = [];
+                        for (var j = 0; j < quests.length; j++) {
+                            if (quests[j].idparent === quests[i].id) {
+                                childs.push(j);
+                            }
+                        }
+                        for (var j = 0; j < childs.length; j++) {
+                            if (!quests[childs[j]].isshowanswertext) {
+                                quests[childs[j]].level = Math.floor(Math.random() * (99 - 1)) + 1;
+                            }
+                        }
+                    }
+                    quests.sort(function (a, b) {
+                        if (a.level < b.level)
+                            return -1;
+                        if (a.level > b.level)
+                            return 1;
+                        return 0;
+                    });
+                }
+                //answers
+                for (var i = 0; i < quests.length; i++) {
+                    if (quests[i].israndom) {
+                        for (var j = 0; j < quests[i].answers.length; j++) {
+                            quests[i].answers[j].level = Math.floor(Math.random() * (99 - 1)) + 1;
+                        }
+                        quests[i].answers.sort(function (a, b) {
+                            if (a.level < b.level)
+                                return -1;
+                            if (a.level > b.level)
+                                return 1;
+                            return 0;
+                        });
+                    }
+                }
+                //change levels for randoms
+
+                for (var i = 0; i < quests.length; i++) {
+                    var quest = quests[i];
+
+                    var tbl = document.createElement("table");
+                    tbl.setStyle({'width': '99%', 'background-color': 'white', 'margin': '0 auto'});
+                    tbl.addClassName('defaulttable');
+                    tbl.id = quest.id;
+                    var div0 = document.createElement("div");
+                    div0.setStyle({'background-color': 'lightgray', 'min-height': "5px", margin: "5px"});
+                    w.appendChild(div0);
+                    var tbd = document.createElement("tbody");
+                    tbl.appendChild(tbd);
+                    if (i > 0) {
+                        //if (mode !== "test") {
+                        tbl.hide();
+                        //}
+                    }
+                    div0.appendChild(tbl);
+
+                    var answs = quests[i].answers;
+                    if (quest.direction === "vertical") {
+                        var trq = document.createElement("tr");
+                        trq.addClassName('defaulttable questtable');
+                        var tdq1 = document.createElement("td");
+                        tdq1.setStyle({'width': '30%'});
+                        tdq1.addClassName('defaulttable questtable');
+                        var tdq2 = document.createElement("td");
+                        tdq2.setStyle({'width': '70%'});
+                        tdq2.innerHTML = quest.name + " : " + quest.text;
+                        tdq2.addClassName('defaulttable questtable');
+
+                        trq.appendChild(tdq1);
+                        trq.appendChild(tdq2);
+                        tbd.appendChild(trq);
+                        for (var j = 0; j < answs.length; j++) {
+                            var answ = answs[j];
+                            var tra = document.createElement("tr");
+                            tra.id = answ.id;
+                            tra.addClassName('defaulttable answtable');
+                            var tda1 = document.createElement("td");
+                            tda1.addClassName('defaulttable answtable');
+                            tda1.setStyle({'width': '30%'});
+                            if (quest.isshowanswertext) {
+                                tda1.innerHTML = answ.name;
+                            }
+                            var tda2 = document.createElement("td");
+                            tda2.addClassName('defaulttable answtable');
+                            tda2.setStyle({'width': '70%'});
+                            var checkbox = document.createElement("input");
+                            checkbox.setAttribute("type", "checkbox");
+                            checkbox.id = answ.id;
+                            checkbox.checked = answ.checked;
+                            tda2.appendChild(checkbox);
+                            checkbox.observe('click', onCheckElement);
+                            bindDomElemToObjProp(checkbox, answ, "checked", onCheckAnswer, onCheckElement1);
+                            if (quest.isshowanswertext) {
+                                var atext = document.createElement("span");
+                                atext.innerHTML = answ.text;
+                                tda2.appendChild(atext);
+                            }
+                            if (answ.iseditable) {
+                                var editbox = document.createElement("input");
+                                editbox.setAttribute("type", "text");
+                                editbox.addClassName('editformfield');
+                                editbox.value = answ.value;
+                                checkbox.editbox = editbox;
+                                tda2.appendChild(editbox);
+                                bindDomElemToObjProp(editbox, answ, "value");
+                            }
+
+                            tra.appendChild(tda1);
+                            tra.appendChild(tda2);
+                            tbd.appendChild(tra);
+                        }
+                    } else if (quest.direction === "horizontal") {
+                        var trq = document.createElement("tr");
+                        trq.addClassName('defaulttable questtable');
+                        var tdq1 = document.createElement("td");
+                        tdq1.setStyle({'width': '30%'});
+                        tdq1.innerHTML = quest.name + " : " + quest.text;
+                        tdq1.addClassName('defaulttable questtable');
+                        var tdq2 = document.createElement("td");
+                        tdq2.setStyle({'width': '70%'});
+                        tdq2.addClassName('defaulttable answtable');
+
+                        trq.appendChild(tdq1);
+                        trq.appendChild(tdq2);
+                        tbd.appendChild(trq);
+
+                        var diva = document.createElement("div");
+                        var divwidth = 100 / answs.length;
+                        diva.setStyle({'display': 'table', width: "100%"});
+                        tdq2.appendChild(diva);
+                        for (var j = 0; j < answs.length; j++) {
+                            var answ = answs[j];
+                            var divacont = document.createElement("div");
+                            divacont.setStyle({'display': 'table-cell', 'text-align': 'center', 'width': divwidth + '%'});
+                            diva.appendChild(divacont);
+                            if (quest.isshowanswertext) {
+                                var divarow1 = document.createElement("div");
+                                divarow1.setStyle({'border-bottom': '1px lightgray solid'});
+                                var divarow2 = document.createElement("div");
+                                divacont.appendChild(divarow1);
+                                divacont.appendChild(divarow2);
+                                var atext = document.createElement("span");
+                                atext.innerHTML = answ.text;
+                                divarow1.appendChild(atext);
+                                var checkbox = document.createElement("input");
+                                checkbox.setAttribute("type", "checkbox");
+                                checkbox.id = answ.id;
+                                checkbox.checked = answ.checked;
+                                divarow2.appendChild(checkbox);
+                                checkbox.observe('click', onCheckElement);
+                                bindDomElemToObjProp(checkbox, answ, "checked", onCheckAnswer, onCheckElement1);
+                                if (answ.iseditable) {
+                                    var editbox = document.createElement("input");
+                                    editbox.setAttribute("type", "text");
+                                    editbox.addClassName('editformfield');
+                                    editbox.value = answ.value;
+                                    checkbox.editbox = editbox;
+                                    divarow2.appendChild(editbox);
+                                    bindDomElemToObjProp(editbox, answ, "value");
+                                }
+                            } else {
+                                var divarow = document.createElement("div");
+                                divacont.appendChild(divarow);
+                                var checkbox = document.createElement("input");
+                                checkbox.setAttribute("type", "checkbox");
+                                checkbox.id = answ.id;
+                                checkbox.checked = answ.checked;
+                                divarow.appendChild(checkbox);
+                                checkbox.observe('click', onCheckElement);
+                                bindDomElemToObjProp(checkbox, answ, "checked", onCheckAnswer, onCheckElement1);
+                                if (answ.iseditable) {
+                                    var editbox = document.createElement("input");
+                                    editbox.setAttribute("type", "text");
+                                    editbox.addClassName('editformfield');
+                                    editbox.value = answ.value;
+                                    checkbox.editbox = editbox;
+                                    divarow.appendChild(editbox);
+                                    bindDomElemToObjProp(editbox, answ, "value");
+                                }
+                            }
+                        }
+
+                    }
+                    w.appendChild(delimiter);
+                    w.appendChild(delimiter);
+                    w.appendChild(delimiter);
+                    w.appendChild(delimiter);
+                }
+                //save btn
+                if (mode !== "test") {
+                    var divs = document.createElement("div");
+                    divs.setStyle({'width': '1024px', 'background-color': 'white',
+                        'font-size': '14px', 'font-weight': 'bold', 'text-align': 'center'});
+                    var spans = document.createElement("div");
+                    spans.innerHTML = "После заполнения анкеты не забудьте сохранить результат. ";
+                    w.appendChild(divs);
+                    divs.appendChild(spans);
+                    var as = document.createElement('a');
+                    var linkTexts = document.createTextNode("Сохранить");
+                    as.appendChild(linkTexts);
+                    as.title = "Сохранить";
+                    as.href = "#";
+                    as.observe('click', saveScenario);
+                    as.setStyle({padding: '5px', 'font-size': '20px', 'text-transform': 'uppercase'});
+                    divs.appendChild(as);
+                    w.appendChild(delimiter);
+                }
+                //save btn
+                //show allready selected
+                if (mode !== "test") {
+                    for (var i = 0; i < quests.length; i++) {
+                        var quest = quests[i];
+                        var answs = quests[i].answers;
+                        for (var k = 0; k < answs.length; k++) {
+                            var answ = answs[k];
+                            if (answ.checked) {
+                                if (quest.idparent !== 0) {
+                                    var childs = findChildrenQuests(quest.idparent);
+                                    for (var l = 0; l < childs.length; l++) {
+                                        var t = findQuestTable(childs[l].id);
+                                        t.show();
+                                    }
+                                }
+                                tbl.show();
+                                var t1 = findQuestTable(answ.idinclude);
+                                if (t1) {
+                                    t1.show();
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                //parent tables
+                for (var i = 0; i < quests.length; i++) {
+                    var quest = quests[i];
+                    if (quest.idparent && (quest.idparent !== 0)) {
+                        var oldtbl = findQuestTable(quest.id);
+                        var oldtblp = findQuestTable(quest.id).parentNode;
+                        var newtbl = findQuestTable(quest.idparent);
+                        oldtbl.setStyle({'border': '0'});
+                        newtbl.parentNode.insert(oldtbl.parentNode.descendants()[0]);
+                        oldtblp.remove();
+                    }
+                }
+            } else {
+                showHint("Сценарий недоступен", 'red');
+            }
+        };
+        this.resetToken = function () {
+            var objt = {type: "allresettoken",
+                object: 0};
+            socketsend(Object.toJSON(objt));
+        };
+        this.onresetToken = function (result) {
+            if (result && (result !== 'false')) {
+                showHint("Токен сброшен", 'green');
+                document.location.href = "index.jsp";
+            }
+        };
+        this.checkToken = function (token) {
+            if (token && (token !== null)) {
+                var objt = {type: "allchecktoken",
+                    object: token};
+                socketsend(Object.toJSON(objt));
+            }
+        };
+        this.oncheckToken = function (result) {
+            var ti = $('tokeninfo');
+            //while (ti.firstChild) {
+            //    ti.removeChild(ti.firstChild);
+            //}
+            if (result && (result !== 'false')) {
+                var res = JSON.parse(result);
+                var div1 = document.createElement("div");
+                div1.setStyle({'width': '99%', 'background-color': 'white', 'font-size': '14px', 'font-weight': 'normal', 'text-align': 'center'});
+                div1.innerHTML = "Токену назначена кампания: " + res.item.name;
+                ti.appendChild(div1);
+
+                var areset = document.createElement('a');
+                var linkText3 = document.createTextNode("Сбросить токен");
+                areset.appendChild(linkText3);
+                areset.title = "Сбросить токен";
+                areset.href = "#";
+                areset.observe('click', scform.resetToken);
+                areset.setStyle({padding: '5px'});
+                div1.appendChild(areset);
+                getScenario(res.item.id);
+            } else {
+                var div1 = document.createElement("div");
+                div1.setStyle({'width': '99%', 'background-color': 'white', 'font-size': '14px', 'font-weight': 'normal', 'text-align': 'center'});
+                div1.innerHTML = "Токену не назначена ни одна кампания или токен недействительный";
+                ti.appendChild(div1);
+
+                var div2 = document.createElement("div");
+                div2.setStyle({'width': '99%', 'background-color': 'white', 'font-size': '20px', 'font-weight': 'bold', 'text-align': 'center'});
+                ti.appendChild(div2);
+                var a3 = document.createElement('a');
+                var linkText3 = document.createTextNode("Начните");
+                a3.appendChild(linkText3);
+                a3.title = "Получите токен";
+                a3.href = "#";
+                a3.observe('click', uasurvey.getNewTokenByChamping);
+                a3.setStyle({padding: '5px'});
+                //div2.appendChild(a1);
+                //div2.appendChild(span1);
+                //div2.appendChild(a2);
+                //div2.appendChild(span2);
+                div2.appendChild(a3);
+                //div2.appendChild(span3);
+            }
+        };
+
+        this.onsaveScenario = function (result) {
+            if (result && (result !== 'false')) {
+                showHint("Анкета сохранена", "green");
+                var uri;
+                if (champing.isforall) {
+                    uri = getGoto("index.jsp", "?action=unauthsurveys&token=" + result);
+                } else {
+                    uri = getGoto("index.jsp", "?action=authsurveys&token=" + result);
+                }
+                $('centerhinttext').innerHTML = "Для продолжения опроса можно использовать следующую ссылку: <br />" +
+                        "<a href='" + uri + "'>"
+                        + uri + "</a>";
+                $('loader').hide();
+                $('centerhint').show();
+            } else {
+                showHint("Не удалось сохранить анкету", "red");
+            }
+        };
+
+        function saveScenario() {
+            //console.log(scenario);
+            $('loader').show();
+            var sobj = {type: "allsavescenario",
+                object: scenario};
+            socketsend(Object.toJSON(sobj));
+            return false;
+        }
+
+        function onCheckAnswer(element, obj, propertyName) {
+            //console.log(element);
+            //console.log(obj);
+            //console.log(propertyName);
+            if (obj.idinclude && (obj.idinclude !== 0)) {
+                var quests = findChildrenQuests(obj.idinclude);
+                if (obj.checked) {
+                    var tbl = findQuestTable(obj.idinclude);
+                    tbl.show();
+                    for (var i = 0; i < quests.length; i++) {
+                        tbl = findQuestTable(quests[i].id);
+                        tbl.show();
+                    }
+                } else {
+                    var answs = findIncludeAnswers(obj.idinclude);
+                    var hidding = true;
+                    for (var i = 0; i < answs.length; i++) {
+                        if (answs[i].checked) {
+                            hidding = false;
+                            break;
+                        }
+                    }
+                    if (hidding) {
+                        var tbl = findQuestTable(obj.idinclude);
+                        tbl.hide();
+                        for (var i = 0; i < quests.length; i++) {
+                            tbl = findQuestTable(quests[i].id);
+                            tbl.hide();
+                        }
+                    }
+                }
+            }
+        }
+        function findQuestTable(idquest) {
+            var tbd = $$('table');
+            for (var i = 0; i < tbd.length; i++) {
+                if (parseInt(tbd[i].id) === idquest) {
+                    return tbd[i];
+                }
+            }
+        }
+
+        function findQuest(idquest) {
+            for (var j = 0; j < scenario.questions.length; j++) {
+                if (parseInt(scenario.questions[j].id) === parseInt(idquest)) {
+                    return scenario.questions[j];
+                }
+            }
+        }
+        function findQuestByAnswer(idanswer) {
+            for (var j = 0; j < scenario.questions.length; j++) {
+                var answs = scenario.questions[j].answers;
+                for (var i = 0; i < answs.length; i++) {
+                    if (parseInt(answs[i].id) === parseInt(idanswer)) {
+                        return scenario.questions[j];
+                    }
+                }
+            }
+        }
+        function findChildrenQuests(idquest) {
+            var ret = [];
+            for (var j = 0; j < scenario.questions.length; j++) {
+                if (parseInt(scenario.questions[j].idparent) === parseInt(idquest)) {
+                    ret.push(scenario.questions[j]);
+                }
+            }
+            return ret;
+        }
+        function findAnswer(idanswer) {
+            for (var j = 0; j < scenario.questions.length; j++) {
+                var answs = scenario.questions[j].answers;
+                for (var i = 0; i < answs.length; i++) {
+                    if (parseInt(answs[i].id) === parseInt(idanswer)) {
+                        return answs[i];
+                    }
+                }
+            }
+        }
+        function findIncludeAnswers(idquest) {
+            var ret = [];
+            for (var j = 0; j < scenario.questions.length; j++) {
+                var answs = scenario.questions[j].answers;
+                for (var i = 0; i < answs.length; i++) {
+                    if (parseInt(answs[i].idinclude) === parseInt(idquest)) {
+                        ret.push(answs[i]);
+                    }
+                }
+            }
+            return ret;
+        }
+    }
+
+    var scform = new ScenarioForm();
+    showHint("<p></p>");
+
+    function onOpen() {
+        var token = '<%=token%>';
+        var mode = '<%=mode%>';
+        var champing = <%=idchamping%>;
+        if ((mode === 'test') && (champing !== 0)) {
+            scform.getScenario(champing);
+        } else {
+            scform.checkToken(token);
+        }
+    }
+    addOnMessage("allgetscenario", scform.ongetScenario);
+    addOnMessage("usergetscenario", scform.ongetScenario);
+    addOnMessage("allchecktoken", scform.oncheckToken);
+    addOnMessage("allsavescenario", scform.onsaveScenario);
+    addOnMessage("allresettoken", scform.onresetToken);
+
+</script>

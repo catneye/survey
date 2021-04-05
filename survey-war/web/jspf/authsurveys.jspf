@@ -1,0 +1,98 @@
+
+<%@page import="ru.ftsmk.info.UsersInfo"%>
+<%
+    String champing = (String) request.getParameter("champing");
+    String mode = (request.getParameter("mode") != null)
+            ? (String) request.getParameter("mode")
+            : "work";
+    String token = (session.getAttribute("token") != null)
+            ? (String) session.getAttribute("token")
+            : ((request.getParameter("token") != null)
+            ? (String) request.getParameter("token") : "null");
+    Integer idchamping = (request.getParameter("champing") != null)
+            ? Integer.parseInt(request.getParameter("champing"))
+            : 0;
+    UsersInfo userinfo = (UsersInfo) session.getAttribute("UserInfo");
+%>
+<%@ page pageEncoding="UTF-8" %>
+<div style="width:100%;" id="tokeninfo"></div>
+<%@include file="/jspf/phint.jspf" %>
+<%@include file="/jspf/ploader.jspf" %>
+
+<%if (!token.equals("null")) {
+%>
+<%@include file="/jspf/pscenario.jspf" %>
+<%} else if (idchamping != 0) {
+%>
+<%@include file="/jspf/pscenario.jspf" %>
+<% } else {
+%>
+<div class="topmenuitem" style="float: left">
+    <a href="#" onclick="asurvey.getNewToken(); return false;" id="pgettoken">Получить ссылку</a>
+</div>
+<table class='defaulttable' style="width:100%;">
+    <tbody id="champings">
+        <jsp:include page="/AuthSurveys" />
+    </tbody>
+</table>
+<%}%>
+<script>
+    function AuthSurvey() {
+        this.getNewToken = function () {
+            var loader = $("loader");
+            loader.show();
+            var ti = $('champings');
+            var champing = ti.touched;
+            if (champing) {
+                var idchamping = parseInt(champing);
+                if (idchamping !== 0) {
+                    var item = champing;
+                    var obj = {type: "allgetnewtoken",
+                        object: item};
+                    socketsend(Object.toJSON(obj));
+                }
+            } else {
+                showHint("Не выбрана кампания", 'red');
+            }
+        };
+        this.ongetNewToken = function (result) {
+            var loader = $("loader");
+            loader.hide();
+            if (result && (result !== 'false')) {
+                var ti = $('tokeninfo');
+                var div1 = document.createElement("div");
+                div1.setStyle({'width': '99%', 'background-color': 'white', 'font-size': '14px', 'font-weight': 'bold', 'text-align': 'center'});
+                div1.innerHTML = "Используйте следующую ссылку для работы с анкетой:<br />";
+                ti.appendChild(div1);
+                
+                var a1 = document.createElement('a');
+                var linkText1 = document.createTextNode(getGoto("index.jsp", "?action=authsurveys&token=" + result));
+                a1.appendChild(linkText1);
+                a1.title = getGoto("index.jsp", "?action=authsurveys&token=" + result);
+                a1.href = getGoto("index.jsp", "?action=authsurveys&token=" + result);
+                a1.setStyle({padding: '5px'});
+                a1.observe('click', function(){return true;});
+                div1.appendChild(a1);
+            }
+        };
+        this.getNewTokenByChamping = function (idchamping) {
+            var loader = $("loader");
+            loader.show();
+            var champing = <%=idchamping%>;
+            if (champing) {
+                var idchamping = parseInt(champing);
+                if (idchamping !== 0) {
+                    var item = champing;
+                    var obj = {type: "allgetnewtoken",
+                        object: item};
+                    socketsend(Object.toJSON(obj));
+                }
+            } else {
+                showHint("Не выбрана кампания", 'red');
+            }
+        };
+    }
+    var asurvey = new AuthSurvey();
+    showHint("<p>Для прохождения опроса необходим уникальный код (токен). Если у вас его нет, его можно получить на этой странице.</p>");
+    addOnMessage("allgetnewtoken", asurvey.ongetNewToken);
+</script>

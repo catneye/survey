@@ -1,0 +1,540 @@
+
+<%@ page pageEncoding="UTF-8" %>
+
+<div class="topmenuitem" style="float: left">
+    <a href="#" onclick="chform.newChamping(); return false;" id="pcreate">Создать</a>
+</div>
+<div class="topmenuitem" style="float: left">
+    <a href="#" onclick="chform.editChamping(); return false;" id="pedit">Редактировать</a>
+</div>
+<div class="topmenuitem" style="float: left">
+    <a href="#" onclick="chform.cloneChamping(); return false;" id="pedit">Клонировать</a>
+</div>
+<div style="clear: both"></div>
+
+<div id="itemeditform" class="itemeditform" style="display: none;">
+    <div class="itemeditformheader">Форма редактирования
+    </div>
+    <div id="itemeditformmain" class="editform"></div>
+    <div id="itemeditformscenario" class="editform" style="height: 550px; margin: 10px;">
+    </div>
+</div>
+
+<table class='defaulttable' style="width:100%;">
+    <tbody id="champings">
+        <jsp:include page="/Champings" />
+    </tbody>
+</table>
+
+<%@include file="/jspf/phint.jspf" %>
+<%@include file="/jspf/ploader.jspf" %>
+
+<script>
+
+    function ChampingForm() {
+        var champing = {};
+        var scenario = {};
+
+        function findQuestRow(idquest) {
+            var tbd = $('scenario');
+            var tbl = tbd.parentNode;
+            var rows = tbl.rows;
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i].idcatiquestion === idquest) {
+                    return rows[i];
+                }
+            }
+        }
+        function findAnswerRow(idanswer) {
+            var tbd = $('scenario');
+            var tbl = tbd.parentNode;
+            var rows = tbl.rows;
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i].idcatianswer === idanswer) {
+                    return rows[i];
+                }
+            }
+        }
+        function findAnswer(idanswer) {
+            for (var j = 0; j < scenario.questions.length; j++) {
+                var answs = scenario.questions[j].answers;
+                for (var i = 0; i < answs.length; i++) {
+                    if (answs[i].id === idanswer) {
+                        return answs[i];
+                    }
+                }
+            }
+        }
+
+        function editScenarioItem(item, descriptor, selects, callback) {
+            var w = $("scenarioitem");
+
+            while (w.firstChild) {
+                w.removeChild(w.firstChild);
+            }
+            w.type = void 0;
+            for (var i in item) {
+                if (descriptor.hasOwnProperty(i)) {
+                    var eid = createFormElement(w, item[i], descriptor[i], selects);
+                    bindDomElemToObjProp($(eid), item, i, callback);
+                }
+            }
+            current = item;
+        }
+        function createScenarioRow(quest, descriptors, selects, tbd) {
+            var direct = (quest.direction === 'vertical') ? "&darr;" : "&rarr;";
+            var tr = findQuestRow(quest.id);
+            if (!tr) {
+                tr = document.createElement("tr");
+                tr.addClassName('defaulttable');
+                tr.setStyle({'background-color': '#F5FEFF'});
+                tr.id = randomString(10);
+                //scenario
+                tr.type = "question";
+                tr.idcatiquestion = quest.id;
+                quest.rowid = tr.id;
+
+                var td1 = document.createElement("td");
+                td1.addClassName('defaulttable');
+                td1.innerHTML = quest.name;
+                var td2 = document.createElement("td");
+                td2.addClassName('defaulttable');//&rarr; &darr;
+                td2.innerHTML = direct + "&nbsp;" + ((quest.text.length > 50) ? (quest.text.substring(0, 50) + "...") : (quest.text));
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                tbd.appendChild(tr);
+                tr.observe('click', function (event) {
+                    touchrow(this.idcatiquestion, this);
+                    editScenarioItem(quest, descriptors["questions"], selects["questions"], function () {
+                        createScenarioRow(quest, descriptors, selects, tbd)
+                    });
+                    return false;
+                });
+            } else {
+                tr.cells[0].innerHTML = quest.name;
+                tr.cells[1].innerHTML = direct + "&nbsp;" + ((quest.text.length > 50) ? (quest.text.substring(0, 50) + "...") : (quest.text));
+            }
+
+            var answs = quest.answers;
+            for (var j = 0; j < answs.length; j++) {
+                var answ = answs[j];
+                var tra = findAnswerRow(answ.id);
+                if (!tra) {
+                    tra = document.createElement("tr");
+                    tra.addClassName('defaulttable');
+                    if (answ.idinclude === 0) {
+                        tra.setStyle({'background-color': '#FFF5F5'});
+                    } else {
+                        tra.setStyle({'background-color': '#FEFFF5'});
+                    }
+                    tra.id = randomString(10);
+                    tra.type = "answer";
+                    tra.idcatianswer = answ.id;
+                    answ.rowid = tra.id;
+
+                    var td1a = document.createElement("td");
+                    td1a.addClassName('defaulttable');
+                    td1a.innerHTML = answ.name;
+                    var td2a = document.createElement("td");
+                    td2a.addClassName('defaulttable');
+                    td2a.innerHTML = (answ.text.length > 50) ? (answ.text.substring(0, 50) + "...") : (answ.text);
+                    tra.appendChild(td1a);
+                    tra.appendChild(td2a);
+                    tbd.appendChild(tra);
+                    tra.observe('click', function (event) {
+                        touchrow(this.idcatianswer, this);
+                        editScenarioItem(findAnswer(this.idcatianswer), descriptors["answers"], selects["answers"], function () {
+                            createScenarioRow(quest, descriptors, selects, tbd);
+                        });
+                        return false;
+                    });
+                } else {
+                    if (answ.idinclude === 0) {
+                        tra.setStyle({'background-color': '#FFF5F5'});
+                    } else {
+                        tra.setStyle({'background-color': '#FEFFF5'});
+                    }
+                    tra.cells[0].innerHTML = answ.name;
+                    tra.cells[1].innerHTML = (answ.text.length > 50) ? (answ.text.substring(0, 50) + "...") : (answ.text);
+                }
+            }
+        }
+        function getScenario(idchamping) {
+            var item = idchamping;
+            var obj = {type: "mggetscenario",
+                object: item};
+            socketsend(Object.toJSON(obj));
+        }
+
+        function saveScenario() {
+            var loader = $("loader");
+            loader.show();
+            var questions = scenario.questions;
+            for (var i = 0; i < questions.length; i++) {
+                var q = scenario.questions[i];
+                var answers = q.answers;
+                for (var j = 0; j < answers.length; j++) {
+                    var a = answers[j];
+                    var item = {id: parseInt(a.id), idcatiquestions: parseInt(a.idcatiquestions),
+                        name: a.name, text: a.text,
+                        level: parseInt(a.level), idinclude: parseInt(a.idinclude),
+                        iseditable: a.iseditable, isfinal: a.isfinal, isenable: a.isenable, options: a.options};
+                    //console.log(item);
+                    var sendobj = {type: "mgsaveanswer",
+                        object: item};
+                    socketsend(Object.toJSON(sendobj));
+                }
+                var item = {id: parseInt(q.id), idchamping: parseInt(q.idchamping),
+                    idparent: parseInt(q.idparent), level: parseInt(q.level),
+                    selectmax: parseInt(q.selectmax), name: q.name, condition: q.condition,
+                    direction: q.direction, isenable: q.isenable, text: q.text,
+                    israndom: q.israndom, israndomchild: q.israndomchild, isshowanswertext: q.isshowanswertext};
+                //console.log(item);
+                var sendobj = {type: "mgsavequestion",
+                    object: item};
+                socketsend(Object.toJSON(sendobj));
+            }
+            loader.hide();
+        }
+
+        function testScenario() {
+            //var win = window.open("./index.jsp?action=unauthsurveys&mode=test&champing=" + champing.id, '_blank');
+            //win.focus();
+            gotoTo("index.jsp", "action=unauthsurveys&mode=test&champing=" + champing.id, true);
+        }
+        function saveChamping() {
+            var item = {id: champing.id, name: champing.name, type: champing.type,
+                idcompany: champing.idcompany, isenable: champing.isenable,
+                isforall: champing.isforall, adddate: champing.adddate, description: champing.description};
+            var obj = {type: "mgsavechamping",
+                object: item};
+            socketsend(Object.toJSON(obj));
+        }
+
+        this.newChamping = function () {
+            var item = {id: 0, name: new Date(), type: "internal", idcompany: 0,
+                isenable: true, isforall: false, adddate: new Date(), description: ""};
+            var obj = {type: "mgsavechamping",
+                object: item};
+            socketsend(Object.toJSON(obj));
+        };
+
+        this.onsaveChamping = function (result) {
+            if (result !== 'false') {
+                showHint("Сохранено", 'green');
+            } else {
+                showHint("Ошибка сохранения кампании", 'red');
+            }
+        };
+
+        this.editChamping = function () {
+            var touched = $('champings').touched;
+            if ((touched) && (touched !== 0)) {
+                var item = touched;
+                var obj = {type: "mggetchamping",
+                    object: item};
+                socketsend(Object.toJSON(obj));
+            } else {
+                showHint("Кампания не выбрана", 'red');
+            }
+        };
+        this.cloneChamping = function () {
+            var touched = $('champings').touched;
+            if ((touched) && (touched !== 0)) {
+                var item = touched;
+                var obj = {type: "mgclonechamping",
+                    object: item};
+                socketsend(Object.toJSON(obj));
+            } else {
+                showHint("Кампания не выбрана", 'red');
+            }
+        };
+        this.oncloneChamping = function (result) {
+            if (result !== 'false') {
+                showHint("Сохранено", 'green');
+                setTimeout(function () {
+                    location.reload();
+                }, 1000);
+            } else {
+                showHint("Ошибка сохранения кампании", 'red');
+            }
+        };
+        this.ongetChamping = function (result) {
+            var res = JSON.parse(result);
+            champing = res.item;
+            var sels = res.selects;
+            var desc = res.descriptor["item"];
+
+            var w = $('itemeditformmain');
+            while (w.firstChild) {
+                w.removeChild(w.firstChild);
+            }
+            //{"id":1,"name":"test","type":"internal","idcompany":1,"isenable":true,"isforall":false,"adddate":"2017-05-23 16:08:06","descriptor":"[{\"name\":\"id\",\"type\":\"integer\",\"iseditable\":false},{\"name\":\"name\",\"type\":\"string\",\"iseditable\":false},{\"name\":\"type\",\"type\":\"string\",\"iseditable\":true},{\"name\":\"idcompany\",\"type\":\"integer\",\"iseditable\":false},{\"name\":\"isenable\",\"type\":\"boolean\",\"iseditable\":true},{\"name\":\"isforall\",\"type\":\"boolean\",\"iseditable\":true},{\"name\":\"adddate\",\"type\":\"date\",\"iseditable\":false}]"}
+            for (var i in champing) {
+                if (desc.hasOwnProperty(i)) {
+                    var eid = createFormElement(w, champing[i], desc[i], sels);
+                    bindDomElemToObjProp($(eid), champing, i);
+                }
+            }
+            var div = document.createElement("div");
+            div.addClassName('editformline');
+            //save
+            var a = document.createElement('a');
+            var linkText = document.createTextNode("Сохранить");
+            a.appendChild(linkText);
+            a.title = "Сохранить";
+            a.href = "#";
+            a.setStyle({padding: '5px'});
+            a.observe('click', function (event) {
+                saveChamping(champing);
+                return false;
+            });
+            div.appendChild(a);
+            //close
+            var a1 = document.createElement('a');
+            var linkText1 = document.createTextNode("Закрыть");
+            a1.appendChild(linkText1);
+            a1.title = "Закрыть";
+            a1.href = "#";
+            a1.setStyle({padding: '5px'});
+            a1.observe('click', function (event) {
+                new Effect.Fade($('itemeditform'), {duration: 0.5});
+                setTimeout(function () {
+                    location.reload();
+                }, 1000);
+                return false;
+            });
+            div.appendChild(a1);
+            w.appendChild(div);
+            //scenario
+            var a1 = document.createElement('a');
+            var linkText1 = document.createTextNode("Сценарий");
+            a1.appendChild(linkText1);
+            a1.title = "Сценарий";
+            a1.href = "#";
+            a1.setStyle({padding: '5px'});
+            a1.observe('click', function (event) {
+                getScenario(champing.id);
+                return false;
+            });
+            div.appendChild(a1);
+            w.appendChild(div);
+
+            new Effect.Appear($('itemeditform'), {duration: 0.5});
+        };
+        this.ongetScenario = function (result) {
+            if (result && (result !== 'false')) {
+                var res = JSON.parse(result);
+                scenario = res;
+
+                if (!scenario.selects) {
+                    scenario.selects = {};
+                }
+
+                var w = $('itemeditformscenario');
+                while (w.firstChild) {
+                    w.removeChild(w.firstChild);
+                }
+                //layout
+                var div0 = document.createElement("div");
+                div0.setStyle({padding: '5px', width: '99%', height: '90%'});
+                var div1 = document.createElement("div");
+                div1.setStyle({'float': 'left', width: '49%', height: '500px', 'overflow-y': 'scroll', 'vertical-align': 'top'});
+                var div11 = document.createElement("div");
+                div11.setStyle({width: '100%', height: '100%', 'overflow-y': 'scroll', 'vertical-align': 'top'});
+                div11.id = "scenarioitems";
+
+                var div2 = document.createElement("div");
+                div2.setStyle({'float': 'left', width: '49%', height: '500px', 'vertical-align': 'top'});
+                var div21 = document.createElement("div");
+                div21.setStyle({width: '100%', height: '100%', 'overflow-y': 'scroll', 'vertical-align': 'top'});
+                div21.id = "scenarioitem";
+
+                //--toolbar
+                var div12 = document.createElement("div");
+                div12.addClassName('editformline');
+                //new quest
+                var a1count = document.createElement("input");
+                a1count.id = randomString(10);
+                a1count.addClassName('editformfield');
+                a1count.setStyle({width: '3em'});
+                a1count.value = 1;
+
+                var a1 = document.createElement('a');
+                var linkText1 = document.createTextNode("Новый вопрос");
+                a1.appendChild(linkText1);
+                a1.title = "Новый вопрос";
+                a1.href = "#";
+                a1.setStyle({padding: '5px'});
+                a1.observe('click', function (event) {
+                    //var nq = {};
+                    //obj.push(nq);
+                    var c = parseInt(a1count.value);
+                    for (var i = 0; i < c; i++) {
+                        //obj.idchamping
+                        var item = {id: 0, idchamping: champing.id, idparent: 0, level: 1, selectmax: 1, name: "", condition: "",
+                            direction: "", isenable: true, text: "", israndom: false, israndomchild: false, isshowanswertext: true};
+                        var sendobj = {type: "mgsavequestion",
+                            object: item};
+                        socketsend(Object.toJSON(sendobj));
+                    }
+                    return false;
+                });
+                //new answer
+                var a3count = document.createElement("input");
+                a3count.id = randomString(10);
+                a3count.addClassName('editformfield');
+                a3count.setStyle({width: '3em'});
+                a3count.value = 1;
+
+                var a3 = document.createElement('a');
+                var linkText3 = document.createTextNode("Новый ответ");
+                a3.appendChild(linkText3);
+                a3.title = "Новый ответ";
+                a3.href = "#";
+                a3.setStyle({padding: '5px'});
+                a3.observe('click', function (event) {
+                    var c = parseInt(a3count.value);
+                    for (var i = 0; i < c; i++) {
+                        var tb = $('scenario');
+                        var tchdr = tb.touchedrow;
+                        if (tchdr && tchdr.type && (tchdr.type === "question")) {
+                            var item = {id: 0, idcatiquestions: tchdr.idcatiquestion, name: "", text: "",
+                                level: 0, idinclude: 0, iseditable: false, isfinal: false, isenable: true, options: ""};
+                            var sendobj = {type: "mgsaveanswer",
+                                object: item};
+                            socketsend(Object.toJSON(sendobj));
+                        } else {
+                            showHint("Не выбран вопрос", "red");
+                        }
+                    }
+                    return false;
+                });
+                //save
+                var a2 = document.createElement('a');
+                var linkText2 = document.createTextNode("Сохранить");
+                a2.appendChild(linkText2);
+                a2.title = "Сохранить";
+                a2.href = "#";
+                a2.setStyle({padding: '5px'});
+                a2.observe('click', function (event) {
+                    saveScenario();
+                    return false;
+                });
+                //test
+                var a4 = document.createElement('a');
+                var linkText4 = document.createTextNode("Тест");
+                a4.appendChild(linkText4);
+                a4.title = "Тест";
+                a4.href = "#";
+                a4.setStyle({padding: '5px'});
+                a4.observe('click', function (event) {
+                    testScenario();
+                    return false;
+                });
+                div12.appendChild(a1count);
+                div12.appendChild(a1);
+                div12.appendChild(a3count);
+                div12.appendChild(a3);
+                div12.appendChild(a2);
+                div12.appendChild(a4);
+                //--toolbar
+                //scenario table
+                var tbl = document.createElement("table");
+                tbl.setStyle({'width': '99%'});
+                tbl.addClassName('defaulttable');
+                var tbd = document.createElement("tbody");
+                tbd.id = "scenario";
+                tbl.appendChild(tbd);
+                div11.appendChild(tbl);
+                div1.appendChild(div11);
+                div2.appendChild(div21);
+                div0.appendChild(div1);
+                div0.appendChild(div2);
+                w.appendChild(div12);
+                w.appendChild(div0);
+
+                var tr0 = document.createElement("tr");
+                var th1 = document.createElement("th");
+                th1.addClassName('defaulttable');
+                th1.setStyle({'width': '20%'});
+                th1.innerHTML = "Имя";
+                var th2 = document.createElement("th");
+                th2.addClassName('defaulttable');
+                th2.setStyle({'width': '80%'});
+                th1.innerHTML = "Текст";
+                tr0.appendChild(th1);
+                tr0.appendChild(th2);
+                tbd.appendChild(tr0);
+                var quests = scenario.questions;
+                for (var i = 0; i < quests.length; i++) {
+                    createScenarioRow(quests[i], scenario.descriptor, scenario.selects, tbd);
+                }
+                //scenario table
+            } else {
+                showHint("Ошибка загрузки сценария", 'red');
+            }
+        };
+        this.onsaveQuestion = function (result) {
+            if (result !== 'false') {
+                showHint("Сохранено", 'green');
+                var newobj = JSON.parse(result);
+                //console.log(newobj);
+                var finded = false;
+                for (var i = 0; i < scenario.questions.length; i++) {
+                    if (scenario.questions[i].id === newobj.id) {
+                        scenario.questions[i] = newobj;
+                        finded = true;
+                        break;
+                    }
+                }
+                if (!finded) {
+                    scenario.questions.push(newobj);
+                }
+                createScenarioRow(newobj, scenario.descriptor, scenario.selects, $("scenario"));
+                if (newobj.selects) {
+                    scenario.selects = newobj.selects;
+                }
+            } else {
+                showHint("Ошибка сохранения вопроса", 'red');
+            }
+        };
+        this.onsaveAnswer = function (result) {
+            if (result !== 'false') {
+                showHint("Сохранено", 'green');
+                var newobj = JSON.parse(result);
+                //console.log(newobj);
+                var finded = false;
+                for (var i = 0; i < scenario.questions.length; i++) {
+                    if (scenario.questions[i].id === newobj.idcatiquestions) {
+                        var answs = scenario.questions[i].answers;
+
+                        for (var j = 0; j < answs.length; j++) {
+                            if (answs[j].id === newobj.id) {
+                                answs[j] = newobj;
+                                finded = true;
+                            }
+                        }
+                        if (!finded) {
+                            answs.push(newobj);
+                        }
+                        createScenarioRow(scenario.questions[i], scenario.descriptor, scenario.selects, $("scenario"));
+                        break;
+                    }
+                }
+                //redraw table
+            } else {
+                showHint("Ошибка сохранения ответа", 'red');
+            }
+        };
+    }
+    var chform = new ChampingForm();
+    showHint("<p>Здесь можно создавать и править кампании. Кампания может быть назначена только зарегистрированным пользователям внутри организации или  всем, даже неавторизованным.</p>");
+
+    addOnMessage("mggetchamping", chform.ongetChamping);
+    addOnMessage("mgsavechamping", chform.onsaveChamping);
+    addOnMessage("mggetscenario", chform.ongetScenario);
+    addOnMessage("mgsavequestion", chform.onsaveQuestion);
+    addOnMessage("mgsaveanswer", chform.onsaveAnswer);
+    addOnMessage("mgclonechamping", chform.oncloneChamping);
+</script>

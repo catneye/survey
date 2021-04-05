@@ -1,0 +1,58 @@
+
+<%@ page pageEncoding="UTF-8" %>
+
+<div class="topmenuitem" style="float: right">
+    <a href="#" onclick="$('loginframe').toggle(); return false;">Войти</a>
+    <div id="loginframe" class="loginframe" style="display:none;">
+        <form id="loginform" action="#" onsubmit="return false;">
+            <fieldset><legend>Вход в систему</legend>
+                <div>
+                    <div class="loginframetext">
+                        <label for="loginname">Имя
+                        </label>
+                    </div>
+                    <div class="loginframetext">
+                        <input type="text" id="loginname" name="loginname" class="loginframeinput"/>
+                    </div>
+                </div>
+                <div>
+                    <div class="loginframetext">
+                        <label for="login-secret">Пароль
+                        </label>
+                    </div>
+                    <div class="loginframetext">
+                        <input type="password" id="loginsecret" name="loginsecret" class="loginframeinput"/>
+                    </div>
+                </div>
+            </fieldset>
+            <div>
+                <input type="submit" value="Войти" class="loginframebutton"
+                       onclick="checklogin();"/>
+                <input type="button" value="Отмена" class="loginframebutton"
+                       onclick="$('loginframe').hide();
+                               return false;"/>
+            </div>
+            <div class="loginframeredtext" id="loginfail"></div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    function checklogin() {
+        var item = $('loginform').serialize(true);
+        item.loginsecret = md5(item.loginsecret);
+        obj = {type: "checklogin",
+            object: item};
+        socketsend(Object.toJSON(obj));
+    }
+
+    function onCheckLogin(result) {
+        if (result === "error") {
+            $("loginfail").innerHTML = "Неверные данные";
+        } else {
+            gotoIndex();
+        }
+    }
+    addOnMessage("checklogin", onCheckLogin);
+</script>

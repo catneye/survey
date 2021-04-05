@@ -1,0 +1,138 @@
+
+<%@ page pageEncoding="UTF-8" %>
+
+<div class="topmenuitem" style="float: left">
+    <a href="#" onclick="rptform.mainReport(); return false;" id="pcreate">Общий</a>
+    <a href="#" onclick="rptform.QAReport(); return false;" id="qacreate">QA группы</a>
+</div>
+<div style="clear: both"></div>
+
+<div id="itemeditform" class="itemeditform" style="display: none;">
+    <div class="itemeditformheader">Форма редактирования </div>
+    <div id="itemreportformmain" class="editform"></div>
+</div>
+
+<table class='defaulttable' style="width:100%;">
+    <tbody id="champings">
+        <jsp:include page="/Champings" />
+    </tbody>
+</table>
+
+
+<%@include file="/jspf/phint.jspf" %>
+<%@include file="/jspf/ploader.jspf" %>
+
+<%
+    String scheme = request.getScheme();
+    Integer rport = 0;
+    if (((scheme.equals("http")) && (request.getServerPort() != 80))
+            || ((scheme.equals("https")) && (request.getServerPort() != 443))) {
+        rport = request.getServerPort();
+    }
+    String uri = request.getScheme() + "://" + request.getServerName() + (rport != 0 ? ":" + rport : "") + request.getContextPath();
+%>
+
+<script>
+
+    function ReportForm() {
+
+        function getReport(filters, url, champing) {
+            var w = $('itemreportformmain');
+            var sels = filters.selects;
+            var desc = filters.descriptor;
+            var obj = filters["item"];
+            for (var i in obj) {
+                if (desc.hasOwnProperty(i)) {
+                    var eid = createFormElement(w, obj[i], desc[i], sels);
+                    bindDomElemToObjProp($(eid), obj, i);
+                }
+            }
+
+            var div = document.createElement("div");
+            div.addClassName('editformline');
+            var a = document.createElement('a');
+            var linkText = document.createTextNode("Сформировать");
+            a.appendChild(linkText);
+            a.title = "Сформировать";
+            a.href = "#";
+            a.setStyle({padding: '5px'});
+            a.observe('click', function (event) {
+                var obj = filters["item"];
+                console.log(obj);
+                var theURL = new URL('<%=uri%>' + url);
+                theURL.searchParams.set('bdate', obj.bdate);
+                theURL.searchParams.set('edate', obj.edate);
+                theURL.searchParams.set('isfinal', obj.isfinal);
+                theURL.searchParams.set('isdetail', obj.isdetail);
+                console.log(theURL.toString());
+                var win = window.open(theURL.toString(),
+                        '_blank');
+                win.focus();
+                return false;
+            });
+            div.appendChild(a);
+            //close
+            var a1 = document.createElement('a');
+            var linkText1 = document.createTextNode("Закрыть");
+            a1.appendChild(linkText1);
+            a1.title = "Закрыть";
+            a1.href = "#";
+            a1.setStyle({padding: '5px'});
+            a1.observe('click', function (event) {
+                new Effect.Fade($('itemeditform'), {duration: 0.5});
+                setTimeout(function () {
+                    location.reload();
+                }, 1000);
+                return false;
+            });
+            div.appendChild(a1);
+            w.appendChild(div);
+            new Effect.Appear($('itemeditform'), {duration: 0.5});
+        }
+
+        this.mainReport = function () {
+            var filters = {
+                "item": {
+                    "bdate": dateToYMD(new Date()) + " 00:00",
+                    "edate": dateToYMD(new Date()) + " 23:59",
+                    "isfinal": false,
+                    "isdetail": false
+                },
+                "descriptor": {
+                    "bdate": {"name": "bdate", "title": "Начальная дата", "type": "date", "iseditable": true},
+                    "edate": {"name": "edate", "title": "Конечная дата", "type": "date", "iseditable": true},
+                    "isfinal": {"name": "isfinal", "title": "Только оконченные", "type": "boolean", "iseditable": true},
+                    "isdetail": {"name": "isdetail", "title": "Выводить детали", "type": "boolean", "iseditable": true}
+                },
+                "selects": {}
+            };
+            var touched = $('champings').touched;
+            var obj = filters["item"];
+
+            getReport(filters, "/reports/main.jsp?action=reportmain&bdate=" +
+                    obj.bdate + "&edate=" + obj.edate +
+                    "&isfinal=" + obj.isfinal + "&idchamping=" + touched + "&isdetail=" + obj.isdetail, touched);
+        };
+
+        this.QAReport = function () {
+            var filters = {
+                "item": {
+                    "bdate": dateToYMD(new Date()) + " 00:00",
+                    "edate": dateToYMD(new Date()) + " 23:59"
+                },
+                "descriptor": {
+                    "bdate": {"name": "bdate", "title": "Начальная дата", "type": "date", "iseditable": true},
+                    "edate": {"name": "edate", "title": "Конечная дата", "type": "date", "iseditable": true}
+                },
+                "selects": {}
+            };
+            var touched = $('champings').touched;
+            var obj = filters["item"];
+
+            getReport(filters, "/reports/groupqa.jsp?action=reportqa&bdate=" +
+                    obj.bdate + "&edate=" + obj.edate + "&idchamping=" + touched, touched);
+        };
+    }
+    var rptform = new ReportForm();
+
+</script>

@@ -1,0 +1,23 @@
+
+<%
+    String depricated = (String) request.getParameter("depricated");
+%>
+<%@ page pageEncoding="UTF-8" %>
+
+<div class="topmenuitem" style="float: right">
+    <a href="#" onmouseover="showMenu('floatmenuadmin'); return false;">Администратор</a>
+    <div class="floatmenu" id="floatmenuadmin" style="display: none;" 
+         onmouseleave="showMenu();return false;">
+        <div class="floatmenuitem" style="float: top;">
+            <a href="./index.jsp?action=companys<%=(depricated != null)?"&depricated=yes":"" %>">Организации</a>
+        </div>
+        <div class="floatmenuitem" style="float: top;">
+            <a href="./index.jsp?action=users<%=(depricated != null)?"&depricated=yes":"" %>">Пользователи</a>
+        </div>
+        <div class="floatmenuitem" style="float: top;">
+            <a href="./index.jsp?action=settings<%=(depricated != null)?"&depricated=yes":"" %>">Настройки</a>
+        </div>
+        <div class="floatmenuitem" style="clear: both;">
+        </div>
+    </div>
+</div>
